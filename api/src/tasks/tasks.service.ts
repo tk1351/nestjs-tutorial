@@ -40,6 +40,15 @@ export class TasksService {
   async createTask(createTaskDto: CreateTaskDto): Promise<Task> {
     return this.taskRepository.createTask(createTaskDto);
   }
+
+  async deleteTask(id: number): Promise<void> {
+    const result = await this.taskRepository.delete(id);
+
+    // DeleteResultのaffectedが0 = 削除できるものが存在しない
+    if (result.affected === 0) {
+      throw new NotFoundException(`ID: ${id}のtaskは存在しません`);
+    }
+  }
   // deleteTask(id: string): void {
   //   const found = this.getTaskById(id);
   //   this.tasks = this.tasks.filter((task) => task.id !== found.id);
