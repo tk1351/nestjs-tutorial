@@ -1,0 +1,5 @@
+db:
+  host: 'nestjs-tutorial_db_1'
+  username: 'root'
+  password: 'root'
+  synchronize: true
