@@ -4,11 +4,12 @@ import { TaskRepository } from './task.repository';
 import { GetTasksFilterDto } from './dto/get-tasks-filter.dto';
 import { TaskStatus } from './task-status.enum';
 
-const mockUser = { username: 'Test user' };
+const mockUser = { id: 12, username: 'Test user' };
 
 // repositoryをmock化する
 const mockTaskRepository = () => ({
   getTasks: jest.fn(),
+  findOne: jest.fn(),
 });
 
 describe('TaskService', () => {
@@ -45,6 +46,24 @@ describe('TaskService', () => {
 
       expect(taskRepository.getTasks).toHaveBeenCalled();
       expect(result).toEqual('someValue');
+    });
+  });
+
+  describe('getTaskById', () => {
+    it('taskRepository.findOne()を呼び、成功すると該当するtaskが返る', async () => {
+      const mockTask = { title: 'Test task', description: 'Test desc' };
+      taskRepository.findOne.mockResolvedValue(mockTask);
+
+      const result = await tasksService.getTaskById(1, mockUser);
+      expect(result).toEqual(mockTask);
+
+      expect(taskRepository.findOne).toHaveBeenCalledWith({
+        where: { id: 1, userId: mockUser.id },
+      });
+    });
+    it('taskが無い場合はエラーが返る', () => {
+      taskRepository.findOne.mockResolvedValue(null);
+      expect(tasksService.getTaskById(1, mockUser)).rejects.toThrow();
     });
   });
 });
