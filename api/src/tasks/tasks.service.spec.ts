@@ -4,6 +4,7 @@ import { TaskRepository } from './task.repository';
 import { GetTasksFilterDto } from './dto/get-tasks-filter.dto';
 import { TaskStatus } from './task-status.enum';
 import { CreateTaskDto } from './dto/create-task.dto';
+import { NotFoundException } from '@nestjs/common';
 
 const mockUser = { id: 12, username: 'Test user' };
 
@@ -12,6 +13,7 @@ const mockTaskRepository = () => ({
   getTasks: jest.fn(),
   findOne: jest.fn(),
   createTask: jest.fn(),
+  delete: jest.fn(),
 });
 
 describe('TaskService', () => {
@@ -65,7 +67,9 @@ describe('TaskService', () => {
     });
     it('taskが無い場合はエラーが返る', () => {
       taskRepository.findOne.mockResolvedValue(null);
-      expect(tasksService.getTaskById(1, mockUser)).rejects.toThrow();
+      expect(tasksService.getTaskById(1, mockUser)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -83,6 +87,24 @@ describe('TaskService', () => {
         mockUser,
       );
       expect(result).toEqual('someTask');
+    });
+  });
+
+  describe('deleteTask', () => {
+    it('taskRepository.deleteTask()を呼び、taskを削除する', async () => {
+      taskRepository.delete.mockResolvedValue({ affected: 1 });
+      expect(taskRepository.delete).not.toHaveBeenCalled();
+      await tasksService.deleteTask(1, mockUser);
+      expect(taskRepository.delete).toHaveBeenCalledWith({
+        id: 1,
+        userId: mockUser.id,
+      });
+    });
+    it('taskが見つからない場合エラーを返す', () => {
+      taskRepository.delete.mockResolvedValue({ affected: 0 });
+      expect(tasksService.deleteTask(1, mockUser)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 });
