@@ -3,6 +3,7 @@ import { TasksService } from './tasks.service';
 import { TaskRepository } from './task.repository';
 import { GetTasksFilterDto } from './dto/get-tasks-filter.dto';
 import { TaskStatus } from './task-status.enum';
+import { CreateTaskDto } from './dto/create-task.dto';
 
 const mockUser = { id: 12, username: 'Test user' };
 
@@ -10,6 +11,7 @@ const mockUser = { id: 12, username: 'Test user' };
 const mockTaskRepository = () => ({
   getTasks: jest.fn(),
   findOne: jest.fn(),
+  createTask: jest.fn(),
 });
 
 describe('TaskService', () => {
@@ -64,6 +66,23 @@ describe('TaskService', () => {
     it('taskが無い場合はエラーが返る', () => {
       taskRepository.findOne.mockResolvedValue(null);
       expect(tasksService.getTaskById(1, mockUser)).rejects.toThrow();
+    });
+  });
+
+  describe('createTask', () => {
+    it('taskRepository.createTask()を呼び、作成結果を返す', async () => {
+      taskRepository.createTask.mockResolvedValue('someTask');
+      const mockCreateTask: CreateTaskDto = {
+        title: 'test title',
+        description: 'test desc',
+      };
+      expect(taskRepository.createTask).not.toHaveBeenCalled();
+      const result = await tasksService.createTask(mockCreateTask, mockUser);
+      expect(taskRepository.createTask).toHaveBeenCalledWith(
+        mockCreateTask,
+        mockUser,
+      );
+      expect(result).toEqual('someTask');
     });
   });
 });
